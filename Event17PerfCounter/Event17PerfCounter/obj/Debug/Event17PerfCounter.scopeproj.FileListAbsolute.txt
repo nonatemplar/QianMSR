@@ -1,0 +1,2 @@
+E:\AzureComputeInsights\ComputeInsight\CIRproject\Event17PerfCounter\Event17PerfCounter\bin\Debug\Algebra.xml
+E:\AzureComputeInsights\ComputeInsight\CIRproject\Event17PerfCounter\Event17PerfCounter\obj\Debug\Algebra.xml

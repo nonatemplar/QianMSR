@@ -1,0 +1,385 @@
+﻿//Script GUID:7a696964-f020-4f53-bd49-9e26d4eb0466
+//Used for tracking history
+#DECLARE startDT DateTime  = new DateTime(2015,2,13);
+#DECLARE endDT DateTime  = new DateTime(2015,2,14);
+
+stream =
+    SSTREAM @"/my/jobs/Event17PerfCounter/pc_sampletest.ss";
+
+split_level1 =
+    SELECT TOP 2000
+            TIMESTAMP,
+            NodeIdentity,
+            RowIndex,
+            RowKey,
+            Cluster,
+            DataCenter,
+            Helper.GetOperationType(CounterName) AS OperationType,
+            Helper.GetType(CounterName) AS counterType,
+            Helper.GetVMID(CounterName) AS VMID,
+            SampleCount,
+            CounterValue,
+            PartitionKey
+    FROM stream
+    WHERE TIMESTAMP != null  AND NodeIdentity !=null AND Cluster != null AND DataCenter != null;
+
+table_pc =
+    REDUCE split_level1
+    ON TIMESTAMP, NodeIdentity, Cluster, DataCenter
+    PRODUCE TIMESTAMP,
+            NodeIdentity,
+            Cluster,
+            DataCenter,
+            HLP_TR_count,
+            HLP_TR_value,
+            HRVP_T61_count,
+            HRVP_T61_value,
+            HRVP_TR_count,
+            HRVP_TR_value,
+            HVP_PFI_count,
+            HVP_PFI_value,
+            HVP_MIM_count,
+            HVP_MIM_value,
+            HVP_TM_count,
+            HVP_TM_value,
+            HVP_TI_count,
+            HVP_TI_value,
+            HVP_TR_count,
+            HVP_TR_value,
+            HVP_GR_count,
+            HVP_GR_value,
+            VSD_WB_count,
+            VSD_WB_value,
+            VSD_RB_count,
+            VSD_RB_value,
+            LD_MOSFS_count,
+            LD_MOSFS_value,
+            LD_MAPPFS_count,
+            LD_MAPPFS_value,
+            Memory_PNB_count,
+            Memory_PNB_value,
+            Memory_PPB_count,
+            Memory_PPB_value,
+            Memory_P_count,
+            Memory_P_value,
+            Memory_AM_count,
+            Memory_AM_value,
+            NA_RB_count,
+            NA_RB_value,
+            NA_BR_count,
+            NA_BR_value,
+            NA_BT_count,
+            NA_BT_value,
+            NA_BS_count,
+            NA_BS_value,
+            NI_MAXBT_count,
+            NA_MAXBT_value,
+            PD_MAPPIT_count,
+            PD_MAPPIT_value,
+            PD_ADW_count,
+            PD_ADW_value,
+            PD_MOSIT_count,
+            PD_MOSIT_value,
+            PD_ADR_count,
+            PD_ADR_value,
+            Process_TC_count,
+            Process_TC_value,
+            Process_WS_count,
+            Process_WS_value,
+            Process_HC_count,
+            Process_HC_value,
+            Processor_PT_count,
+            Processor_PT_value,
+            Processor_DPCT_count,
+            Processor_DPCT_value,
+            Processor_ProT_count,
+            Processor_ProT_value,
+            TCPv4_CF_count,
+            TCPv4_CF_value,
+            TCPv4_CE_count,
+            TCPv4_CE_value
+    USING SampleReducer
+    PRESORT TIMESTAMP;
+rc =
+    SELECT *
+    FROM table_pc
+    WHERE  HRVP_TR_count != -1;
+
+OUTPUT rc
+TO SSTREAM @"/my/jobs/Event17PerfCounter/pc_testresult.ss";
+
+#CS
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
+using ScopeRuntime;
+
+public class Helper
+{
+    public static String GetOperationType(String CounterName)
+    {
+        try{
+            String[] stringSeparators=new string[]{"\\"};
+            String[] a = CounterName.Split(stringSeparators, StringSplitOptions.RemoveEmptyEntries);
+            return a[1];
+        }
+        catch(Exception e){
+            return CounterName;
+        }
+    }
+    public static String GetType(String CounterName){
+        try{
+            String[] stringSeparators=new string[]{"\\"};
+            String[] typeSeparators=new string[]{"("};
+            String[] a = CounterName.Split(stringSeparators, StringSplitOptions.RemoveEmptyEntries);
+            String[] b = a[0].Split(typeSeparators, StringSplitOptions.RemoveEmptyEntries);
+            return b[0];
+        }
+        catch(Exception e){
+            return "NA";
+        }
+    }
+    public static String GetVMID(String CounterName) {
+        try{
+            String[] stringSeparators=new string[]{"\\"};
+            String[] typeSeparators=new string[]{"("};
+            String[] a = CounterName.Split(stringSeparators, StringSplitOptions.RemoveEmptyEntries);
+            String[] b = a[0].Split(typeSeparators, StringSplitOptions.RemoveEmptyEntries);
+            return b[1].Remove(b[1].Length-1,1);
+        }
+        catch(Exception e) {
+            return "NA";
+        }
+    }
+}
+
+public class SampleReducer : Reducer
+{
+
+    public override Schema Produces(string[] columns, string[] args, Schema input)
+    {      
+        return new Schema(@"TIMESTAMP:DateTime, NodeIdentity:string, Cluster:string, DataCenter:string,
+                            HLP_TR_count: Int32,  HLP_TR_value: Double,
+                            HRVP_T61_count:Int32, HRVP_T61_value:Int32,
+                            HRVP_TR_count: Int32, HRVP_TR_value:Double, 
+                            HVP_PFI_count:Int32, HVP_PFI_value:Double, 
+                            HVP_MIM_count:Int32, HVP_MIM_value:Double, 
+                            HVP_TM_count:Int32, HVP_TM_value:Double, 
+                            HVP_TI_count:Int32, HVP_TI_value:Double, 
+                            HVP_TR_count:Int32, HVP_TR_value:Double, 
+                            HVP_GR_count:Int32, HVP_GR_value:Double,
+                            VSD_WB_count:Int32, VSD_WB_value:Double,
+                            VSD_RB_count:Int32, VSD_RB_value:Double,
+                            LD_MOSFS_count:Int32, LD_MOSFS_value:Double,
+                            LD_MAPPFS_count:Int32, LD_MAPPFS_value:Double,
+                            Memory_PNB_count:Int32,Memory_PNB_value:Double,
+                            Memory_PPB_count:Int32, Memory_PPB_value:Double,
+                            Memory_P_count:Int32, Memory_P_value:Double,
+                            Memory_AM_count:Int32, Memory_AM_value:Double,                            
+                            NA_RB_count:Int32,NA_RB_value:Double,
+                            NA_BR_count:Int32,NA_BR_value:Double,
+                            NA_BT_count:Int32,NA_BT_value:Double,
+                            NA_BS_count:Int32,NA_BS_value:Double,
+                            NI_MAXBT_count:Int32,NA_MAXBT_value:Double,
+                            PD_MAPPIT_count:Int32,PD_MAPPIT_value:Double,
+                            PD_ADW_count:Int32,PD_ADW_value:Double,
+                            PD_MOSIT_count:Int32,PD_MOSIT_value:Double,
+                            PD_ADR_count:Int32,PD_ADR_value:Double,
+                            Process_TC_count:Int32,Process_TC_value:Double,
+                            Process_WS_count:Int32,Process_WS_value:Double,
+                            Process_HC_count:Int32,Process_HC_value:Double,
+                            Processor_PT_count:Int32,Processor_PT_value:Double,
+                            Processor_DPCT_count:Int32,Processor_DPCT_value:Double,
+                            Processor_ProT_count:Int32,Processor_ProT_value:Double,
+                            TCPv4_CF_count:Int32, TCPv4_CF_value:Double,
+                            TCPv4_CE_count:Int32, TCPv4_CE_value:Double");
+    }
+    public override IEnumerable<Row> Reduce(RowSet input, Row output, string[] args)
+    {
+        bool first = true;         
+        DateTime TIMESTAMP=new DateTime();
+        //TIMESTAMP=DateTime.Today;
+        string NodeIdentity="";         
+        string Cluster="";
+        string DataCenter="";
+            string RowIndex="";
+            string RowKey="";
+            string OperationType="";
+            string counterType="";
+            string VMID="";
+            int SampleCount=0;
+            Double CounterValue=0;
+            
+        // Output Schema matching
+        string[] OperationTypes = {"% Total Run Time",
+                                        "% T.61.108.160",
+                                        "% Total Run Time",               
+                                        "Page Fault Intercepts/sec",
+                                        "% Total Run Time",
+                                        "Memory Intercept Messages/sec",
+                                        "Total Intercepts/sec",
+                                        "% Guest Run Time",
+                                        "Total Messages/sec",
+                                        "Write Bytes/sec",
+                                        "Read Bytes/sec",
+                                        "MIN OS % Free Space",
+                                        "MIN APP % Free Space",
+                                        "Pages/sec",
+                                        "Pool Nonpaged Bytes",
+                                        "Pool Paged Bytes",
+                                        "Available Mbytes",
+                                        "Network Adapter(Local Area Connection* 3)Read Bytes/sec",
+                                        "Bytes Received/sec",
+                                        "Bytes Total/sec",
+                                        "Bytes Sent/sec",
+                                        "MAX Bytes Total/Sec",
+                                        "MIN APP % Idle Time",
+                                        "Avg. Disk sec/Write",
+                                        "MIN OS % Idle Time",
+                                        "Avg. Disk sec/Read",
+                                        "Thread Count",
+                                        "Working Set",
+                                        "Handle Count",
+                                        "% Privileged Time",
+                                        "% DPC Time",
+                                        "% Processor Time",
+                                        "Connection Failures",
+                                        "Connections Established"};
+          string[] CounterTypes={"Hyper-V Hypervisor Logical Processor",
+                                    "Hyper-V Hypervisor Root Virtual Processor",
+                                    "Hyper-V Hypervisor Root Virtual Processor",
+                                    "Hyper-V Hypervisor Virtual Processor",
+                                    "Hyper-V Hypervisor Virtual Processor",
+                                    "Hyper-V Hypervisor Virtual Processor",
+                                    "Hyper-V Hypervisor Virtual Processor",
+                                    "Hyper-V Hypervisor Virtual Processor",
+                                    "Hyper-V Hypervisor Virtual Processor",
+                                    "Hyper-V Virtual Storage Device",
+                                    "Hyper-V Virtual Storage Device",
+                                    "LogicalDisk",
+                                    "LogicalDisk",
+                                    "Memory",
+                                    "Memory",
+                                    "Memory",
+                                    "Memory",
+                                    "Network Adapter",
+                                    "Network Adapter",
+                                    "Network Adapter",                                    
+                                    "Network Adapter",
+                                    "Network Interface",
+                                    "PhysicalDisk",
+                                    "PhysicalDisk",
+                                    "PhysicalDisk",
+                                    "PhysicalDisk",
+                                    "Process",
+                                    "Process",
+                                    "Process",
+                                    "Processor",
+                                    "Processor",
+                                    "Processor",
+                                    "TCPv4",
+                                    "TCPv4"};
+        
+        for (int i = 0; i<OperationTypes.Length; i++) {
+            int intCount = -1;
+            Double intValue = 0;
+            output[i*2].Set(intCount);
+            output[i*2+1].Set(intValue);
+        }
+        
+        foreach (Row row in input.Rows)
+        {
+      
+            
+            OperationType=row[6].String;
+            
+            counterType=row[7].String;
+            VMID=row[8].String;
+            SampleCount=row[9].Integer;
+            CounterValue=row[10].Double;
+            if (counterType == null || OperationType == null) continue;
+            if (first) {
+                try {
+                    TIMESTAMP = row["TIMESTAMP"].DateTime;
+                }
+                catch (Exception e) {
+                    break;
+                }            
+                NodeIdentity=row[1].String;            
+                Cluster=row[4].String;            
+                DataCenter=row[5].String;
+                
+                first=false;
+            }    
+            int col_index=-1;
+
+            //Console.WriteLine(OperationTypes.Length);
+            
+            for (int i = 0 ;i<OperationTypes.Length; i++) {
+                if (OperationTypes[i] == OperationType && CounterTypes[i] == counterType) {
+                    col_index = i;
+                    break;
+                }                    
+            }
+            if (col_index == -1) continue;
+            //Console.WriteLine(col_index);
+            //Console.ReadKey();
+            if (counterType.Equals("Hyper-V Hypervisor Virtual Processor")) {
+                if(VMID == "_TOTAL") {
+                        output[4+2*col_index].Set(SampleCount);
+                        output[4+2*col_index+1].Set(CounterValue);
+                    }
+            }
+            else if (counterType.Equals("Hyper-V Hypervisor Root Virtual Processor")) {
+                    if(VMID == "Root VP 0") {
+                        output[4+2*col_index].Set(SampleCount);
+                        output[4+2*col_index+1].Set(CounterValue);
+                    }
+            }
+            else if (counterType.Equals("Hyper-V Virtual Storage Device")) {
+                int uCount = 0;
+                Double uValue = 0;
+                if (output[4+2*col_index].Integer == -1) {
+                    uCount = output[4+2*col_index].Integer + SampleCount;
+                    uValue = output[4+2*col_index+1].Double + CounterValue;
+                }else {
+                    uCount = output[4+2*col_index].Integer + SampleCount;
+                    uValue = output[4+2*col_index+1].Double + CounterValue;
+                }
+                output[4+2*col_index].Set(uCount);
+                output[4+2*col_index+1].Set(uValue);
+            }
+            else if (counterType.Equals("Network Adapter")){
+                int uCount = 0;
+                Double uValue = 0;
+                if (output[4+2*col_index].Integer == -1) {
+                    uCount = 0 + SampleCount;
+                    uValue = 0 + CounterValue;
+                }else {
+                    uCount = output[4+2*col_index].Integer + SampleCount;
+                    uValue = output[4+2*col_index+1].Double + CounterValue;
+                }
+                        
+                output[4+2*col_index].Set(uCount);
+                output[4+2*col_index+1].Set(uValue);
+            }
+            else {
+                output[4+2*col_index].Set(SampleCount);
+                output[4+2*col_index+1].Set(CounterValue);
+            }
+
+        }
+        output[0].Set(TIMESTAMP);
+        output[1].Set(NodeIdentity);
+        output[2].Set(Cluster);
+        output[3].Set(DataCenter);
+
+        //output[4].Set(SampleCount);
+        //output[5].Set(null);
+        
+        yield return output;
+    }
+
+}
+#ENDCS

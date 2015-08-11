@@ -1,0 +1,117 @@
+﻿//Script GUID:91690179-67c2-4006-ad66-5f07caddf60e
+//Used for tracking history
+
+
+REFERENCE @"System.Xml.dll";
+#DECLARE startDateTime string = "11/20/2014 12:00:00 AM";
+MODULE @"/shares/AzureAnalytics.Prod/Sdk/AzureAnalytics1.2.module" AS AzureAnalytics;
+
+mdstable = AzureAnalytics.GetStream12(
+    entityNamespace = "Microsoft.Cloud",
+    entityName = "faOsvhddiskeventtable",
+    startDateTime = "05/01/2015 00:00:00",
+    endDateTime = "05/31/2015 23:59:59");
+
+faOsTable = 
+SELECT 
+    PreciseTimeStamp.GetValueOrDefault(DateTime.MaxValue) AS PreciseTimeStamp,
+    NodeIdentity,
+    DataCenter,
+    Cluster,
+    Helper.GetCode(ParamBinary1) AS errCode,
+    Helper.GetFlag(ParamBinary1) AS flag,
+    EventId
+    FROM mdstable
+    WHERE Cluster == "DM2PrdApp02";
+//Filter out Event17s of the two minute timeout variety.
+event17s =
+    SELECT *
+    FROM faOsTable
+    WHERE EventId == 17 AND errCode == "81700065";
+
+event2s =
+    SELECT *
+    FROM faOsTable
+    WHERE EventId == 2;
+
+event17_derived = SELECT
+    event17s.NodeIdentity AS E17_nodes,
+    event17s.PreciseTimeStamp AS E17_timestamp,
+    event2s.NodeIdentity AS E2_nodes,
+    event2s.Cluster AS E2_cluster,
+    event2s.PreciseTimeStamp AS E2_timestamp,
+    (event2s.flag == 0?"read":"write") AS IOoperation,
+    event2s.errCode AS errCode,
+    event17s.PreciseTimeStamp.Subtract(event2s.PreciseTimeStamp).TotalMilliseconds AS delta,
+    Math.Abs(event17s.PreciseTimeStamp.Subtract(event2s.PreciseTimeStamp).TotalMilliseconds) AS modDelta
+FROM event17s JOIN event2s
+ON event17s.NodeIdentity == event2s.NodeIdentity
+AND event17s.Cluster == event2s.Cluster;
+
+//Filter based on temporal window.
+event17_filtered =
+    SELECT *
+    FROM event17_derived
+    WHERE delta <= (30*60*1000) AND delta >= -(30*60*1000);
+
+//Group E2s timestamps.
+event2_grouped =
+    SELECT E2_timestamp,
+            E2_nodes,
+            E2_cluster,
+           MIN(modDelta) AS minDelta
+    FROM event17_filtered
+    GROUP BY E2_timestamp,
+            E2_nodes,
+            E2_cluster;
+
+
+event17_derived_final =
+    SELECT
+        event17_derived.delta,
+        event17_derived.IOoperation,
+        event17_derived.errCode,
+        event17_derived.E17_timestamp,
+        event17_derived.E17_nodes,
+        event17_derived.E2_cluster
+    FROM
+    event17_derived JOIN event2_grouped ON
+        event2_grouped.E2_timestamp == event17_derived.E2_timestamp AND
+        event2_grouped.E2_nodes == event17_derived.E2_nodes AND
+        event2_grouped.E2_cluster == event17_derived.E2_cluster AND
+        event2_grouped.minDelta == event17_derived.modDelta;
+
+OUTPUT event17_derived_final TO @"/my/jobs/Event17PerfCounter/event17_durations_may_DM2PrdApp02.csv" USING DefaultTextOutputter( delimiter : ',');
+
+#CS
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
+using ScopeRuntime;
+
+public class Helper
+{
+    public static String GetCode(String paramBinary)
+    {
+        try{
+            String a = paramBinary.Substring(40);
+            String ErrorCode = a.Substring(6, 2) + a.Substring(4, 2) + a.Substring(2, 2) + a.Substring(0, 2);
+            return ErrorCode;
+        }
+        catch(Exception e){
+            return "NA";
+        }
+    }
+    public static int GetFlag(String paramBinary){
+        try{
+            int flag = Convert.ToInt32(paramBinary.Substring(202,2), 16);
+            return flag % 2;
+        }
+        catch(Exception e){
+            return 2;
+        }
+    }
+}
+#ENDCS
+

@@ -1,0 +1,47 @@
+﻿//Script GUID:90d5a56b-48a0-41d6-9fcc-aa16d87a7b57
+//Used for tracking history
+
+
+perfcounter =
+    SSTREAM @"/my/jobs/Event17PerfCounter/PerfCounter_All.ss";
+
+event17s =
+    SSTREAM @"/my/jobs/Event17PerfCounter/Event17_all_2015.ss";
+
+
+join = 
+    SELECT perfcounter.*,
+        perfcounter.TIMESTAMP.Subtract(event17s.PreciseTimeStamp).TotalMilliseconds AS Delta,
+        Math.Abs(perfcounter.TIMESTAMP.Subtract(event17s.PreciseTimeStamp).TotalMilliseconds) AS modDelta,
+        event17s.Event17_Occurrence AS Event17_Occurrence,
+        event17s.PreciseTimeStamp AS Event17_TimeStamp
+    FROM event17s 
+    JOIN perfcounter 
+    ON perfcounter.NodeIdentity == event17s.NodeIdentity AND perfcounter.Cluster == event17s.Cluster;
+
+join_filtered_list = 
+    SELECT TOP 400000 TIMESTAMP, NodeIdentity, Cluster
+    FROM join
+    WHERE modDelta >(60*60*1000);
+ 
+join_sample =
+    SELECT *
+    FROM join_filtered_list;
+
+join_level2 = 
+    SELECT perfcounter.*,
+        perfcounter.TIMESTAMP.Subtract(join_sample.TIMESTAMP).TotalMilliseconds AS ControlDelta,
+        Math.Abs(perfcounter.TIMESTAMP.Subtract(join_sample.TIMESTAMP).TotalMilliseconds) AS modControlDelta,
+        join_sample.TIMESTAMP AS ControlTime
+    FROM join_sample 
+    JOIN perfcounter 
+    ON perfcounter.NodeIdentity == join_sample.NodeIdentity AND perfcounter.Cluster == join_sample.Cluster;
+
+join_filtered_level2 = 
+    SELECT *
+    FROM join_level2
+    WHERE modControlDelta <=(30*60*1000);                                             
+
+
+
+OUTPUT join_filtered_level2 TO @"/my/jobs/Event17PerfCounter/perf_LP0_control_occur_400000_2015.csv" USING DefaultTextOutputter(delimiter : ',');

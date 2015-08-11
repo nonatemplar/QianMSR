@@ -1,0 +1,17 @@
+﻿//Script GUID:7a439bf0-e215-4a3c-9da1-5432440a4e29
+//Used for tracking history
+MODULE @"/shares/AzureAnalytics.Prod/Sdk/AzureAnalytics1.3.module" AS AzureAnalytics;             
+             
+ AzureAnalytics.Initialize(             
+	entity = "Microsoft.Cloud.faoshypervworkeradminevent");             
+             
+ rs = AzureAnalytics.LoadStream(             
+	entity = "Microsoft.Cloud.faoshypervworkeradminevent",             
+	startDateTime = "2015-06-14",
+	endDateTime = "2015-06-15");             
+             
+ stream = SELECT             
+	DISTINCT EventId, COUNT(*) AS EventCount
+ FROM rs;             
+             
+ OUTPUT stream TO SSTREAM "/my/hyperVaggr.ss";

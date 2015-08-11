@@ -1,0 +1,35 @@
+﻿//Script GUID:30271838-e96b-4b25-a52d-4ac5682d3e7d
+//Used for tracking history
+#DECLARE StartDate DateTime = new DateTime(2015, 4, 1);
+
+perfcounter =
+    SSTREAM @"/my/jobs/Event17PerfCounter/PerfCounter_All.ss";
+
+event17s =
+    SSTREAM @"/my/jobs/Event17PerfCounter/Event17_all_2015.ss";
+
+
+join = 
+    SELECT perfcounter.*,
+        perfcounter.TIMESTAMP.Subtract(event17s.PreciseTimeStamp).TotalMilliseconds AS Delta,
+        Math.Abs(perfcounter.TIMESTAMP.Subtract(event17s.PreciseTimeStamp).TotalMilliseconds) AS modDelta,
+        event17s.Event17_Occurrence AS Event17_Occurrence,
+        event17s.PreciseTimeStamp AS Event17_TimeStamp
+    FROM event17s 
+    JOIN perfcounter 
+    ON perfcounter.NodeIdentity == event17s.NodeIdentity AND perfcounter.Cluster == event17s.Cluster;
+
+join_filtered = 
+    SELECT *
+    FROM join
+    WHERE modDelta <=(30*60*1000)
+    ORDER BY Cluster, NodeIdentity, TIMESTAMP;
+                                              
+/*
+pc_select =
+    SELECT TIMESTAMP, NodeIdentity, Cluster, HRVP_TR_count, HRVP_TR_value, Event17_Occurrence
+    FROM join
+    WHERE Event17_Occurrence != null
+    ORDER BY TIMESTAMP;
+*/
+OUTPUT join_filtered TO @"/my/jobs/Event17PerfCounter/perf_LP0_event17_occur_all_2015.csv" USING DefaultTextOutputter(delimiter : ',');
