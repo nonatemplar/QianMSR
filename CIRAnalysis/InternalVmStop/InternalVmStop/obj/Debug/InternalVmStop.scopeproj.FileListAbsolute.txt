@@ -1,2 +1,0 @@
-E:\AzureComputeInsights\ComputeInsight\CIRproject\InternalVmStop\InternalVmStop\bin\Debug\Algebra.xml
-E:\AzureComputeInsights\ComputeInsight\CIRproject\InternalVmStop\InternalVmStop\obj\Debug\Algebra.xml
