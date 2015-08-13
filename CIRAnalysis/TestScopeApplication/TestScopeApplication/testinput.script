@@ -1,0 +1,10 @@
+﻿//Script GUID:9a81eaad-2ea6-4f28-9236-78aa9fa02154
+//Used for tracking history
+
+a = EXTRACT 
+    DeploymentGUID:string 
+    FROM @"/my/jobs/DeploymentLifetime/Deployment_list2.txt"
+    USING DefaultTextExtractor();
+
+
+OUTPUT a TO SSTREAM @"/my/jobs/testttt.ss";

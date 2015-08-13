@@ -1,0 +1,15 @@
+﻿//Script GUID:195fd727-4089-48de-858a-0cf81e92cd28
+//Used for tracking history
+                    
+rs = 
+SSTREAM
+SPARSE STREAMSET @"/shares/AzureAnalytics.Dev/AzureAnalytics.Dev.PublishedData/Microsoft.Cloud.MCIO/AzureDeployments/" 
+PATTERN @"/%Y/%m/Data_%Y_%m_%d.ss"
+RANGE __date = ["2015-06-01","2015-06-17"];
+
+rc =
+    SELECT *
+    FROM rs
+    WHERE SubscriptionGUID == "2f94e09f-03fd-4ab9-b667-5deef812ac73";
+
+   OUTPUT rc TO SSTREAM "/my/jobs/PizzaHut/Deployments_on_events.ss";

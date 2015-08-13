@@ -7,7 +7,7 @@ library(mixtools)
 library(reshape2)
 
 #perfCounter= read.table("E:/AzureComputeInsights/ComputeInsight/Event17perfCounter/Results/pc_partition_testresult.csv", sep=",", header=T,fill = TRUE )
-control= read.table("E:/AzureComputeInsights/ComputeInsight/Event17perfCounter/Results/perf_LP0_control_occur_all_2015.csv", sep=",", header=T,fill = TRUE )
+control= read.table("E:/AzureComputeInsights/ComputeInsight/Event17perfCounter/Results/perf_LP0_control_occur_40000_2015.csv", sep=",", header=T,fill = TRUE )
 
 
 colnames(control) <- c("TIMESTAMP", "NodeIdentity", "Cluster","DataCenter","HLP_TR_count","HLP_TR_value","HRVP_T61_count",

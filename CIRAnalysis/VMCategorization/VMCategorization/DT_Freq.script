@@ -1,0 +1,106 @@
+﻿//Script GUID:c1504ea0-7182-449f-8241-ca300ed37051
+//Used for tracking history
+
+MODULE @"/shares/AzureAnalytics.Prod/Sdk/AzureAnalytics1.3.module" AS AzureAnalytics;             
+             
+AzureAnalytics.Initialize(             
+	entity = "Microsoft.Azure.Compute.VmAvailabilityDataHourly");             
+             
+a = AzureAnalytics.LoadStream(             
+	entity = "Microsoft.Azure.Compute.VmAvailabilityDataHourly",             
+	startDateTime = "2015-05-17",
+	endDateTime = "2015-06-17");      
+
+rawData=
+    SELECT *
+    FROM a;
+
+ur_vm_list=
+    SELECT *
+    FROM rawData
+    WHERE rawData.RCA=="Unplanned";
+
+vm_ur = 
+
+    SELECT rawData.*
+    FROM rawData, ur_vm_list
+    WHERE rawData.LogicalContainerId==ur_vm_list.LogicalContainerId;
+
+rc =
+    REDUCE vm_ur
+    ON LogicalContainerId
+    PRODUCE LogicalContainerId,
+            InitTime,
+            LastTime
+    USING SampleReducer
+    PRESORT PreciseTimeStamp;
+
+OUTPUT rc TO @"/my/jobs/VM_DT_lifetime_iaas.txt" USING DefaultTextOutputter();
+//OUTPUT rc TO SSTREAM @"/my/jobs/VM_DT_lifetime_2DT.ss";
+#CS
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+public class SampleReducer : Reducer
+{
+
+     public override Schema Produces(string[] columns, string[] args, Schema input)
+
+     {
+
+          return new Schema("LogicalContainerId:string, InitTime: DateTime, LastTime: DateTime");  
+
+     }
+
+ 
+
+    public override IEnumerable<Row> Reduce(RowSet input, Row output, string[] args)
+    {
+        
+          bool first = true;
+
+          string LogicalContainerId = "";
+
+          DateTime initTime=new DateTime();
+
+
+          DateTime lastTime=new DateTime();
+
+          foreach (Row row in input.Rows)
+
+          {
+
+              if (first)
+
+              {
+                   LogicalContainerId=row[0].String;
+
+                   initTime=row[1].DateTime;
+                   lastTime=row[1].DateTime;
+                   
+                   first = false;
+
+              }
+              else {
+                  lastTime=row[1].DateTime;
+              }
+
+              
+          }
+
+          output[0].Set(LogicalContainerId);
+
+          output[1].Set(initTime);
+
+          output[2].Set(lastTime);
+
+          yield return output;
+
+     }
+
+}
+#ENDCS

@@ -1,0 +1,27 @@
+*** Entering compilation, time elapsed until this point: 00:00:07.6024104
+*** Done with C# compilation, time elapsed until this point: 00:00:07.9534990
+#CPP cl.exe compile (iteration 1/1) -- Native
+#CPP stdout:
+__ScopeCodeGenEngine__.dll.cpp
+time(C:\Users\Administrator\AppData\Local\Microsoft\VisualStudio\ScopeStudio\CppSdk\VC\bin\c1xx.dll)=3.41444s < 74228211256 - 74240187394 > BB [E:\AzureComputeInsights\ComputeInsight\CIRproject\VMCategorization\VMCategorization\bin\Debug\E06ABA44A8E0A752\AzureDeployment_C5B236EF589A478C\__ScopeCodeGenEngine__.dll.cpp]
+time(C:\Users\Administrator\AppData\Local\Microsoft\VisualStudio\ScopeStudio\CppSdk\VC\bin\c2.dll)=20.49546s < 74240191520 - 74312079395 > BB [E:\AzureComputeInsights\ComputeInsight\CIRproject\VMCategorization\VMCategorization\bin\Debug\E06ABA44A8E0A752\AzureDeployment_C5B236EF589A478C\__ScopeCodeGenEngine__.dll.cpp]
+
+#CPP stderr:
+
+*** Done with C++ compilation, time elapsed until this point: 00:00:32.0985097
+#LINK stdout:
+   Creating library E:\AzureComputeInsights\ComputeInsight\CIRproject\VMCategorization\VMCategorization\bin\Debug\E06ABA44A8E0A752\AzureDeployment_C5B236EF589A478C\__ScopeCodeGenEngine__.lib and object E:\AzureComputeInsights\ComputeInsight\CIRproject\VMCategorization\VMCategorization\bin\Debug\E06ABA44A8E0A752\AzureDeployment_C5B236EF589A478C\__ScopeCodeGenEngine__.exp
+Linker: LibDef Total time = 0.00846s PB: 19447808 [E:\AzureComputeInsights\ComputeInsight\CIRproject\VMCategorization\VMCategorization\bin\Debug\E06ABA44A8E0A752\AzureDeployment_C5B236EF589A478C\__ScopeCodeGenEngine__.dll] 
+Linker:   OptRef Total time = 0.00226s PB: 20312064 [E:\AzureComputeInsights\ComputeInsight\CIRproject\VMCategorization\VMCategorization\bin\Debug\E06ABA44A8E0A752\AzureDeployment_C5B236EF589A478C\__ScopeCodeGenEngine__.dll] 
+Linker:   OptIcf Total time = 0.03416s PB: 34783232 [E:\AzureComputeInsights\ComputeInsight\CIRproject\VMCategorization\VMCategorization\bin\Debug\E06ABA44A8E0A752\AzureDeployment_C5B236EF589A478C\__ScopeCodeGenEngine__.dll] 
+__ScopeCodeGenEngine__.dllNative.obj : warning LNK4210: .CRT section exists; there may be unhandled static initializers or terminators
+msvcrt.lib(atonexit.obj) : warning LNK4210: .CRT section exists; there may be unhandled static initializers or terminators
+Linker: Pass 1: Interval #1, time = 0.16037s [E:\AzureComputeInsights\ComputeInsight\CIRproject\VMCategorization\VMCategorization\bin\Debug\E06ABA44A8E0A752\AzureDeployment_C5B236EF589A478C\__ScopeCodeGenEngine__.dll] 
+Linker:   Wait PDB close Total time = 0.12858s PB: 14430208 [E:\AzureComputeInsights\ComputeInsight\CIRproject\VMCategorization\VMCategorization\bin\Debug\E06ABA44A8E0A752\AzureDeployment_C5B236EF589A478C\__ScopeCodeGenEngine__.dll] 
+Linker: Pass 2: Interval #2, time = 0.19545s [E:\AzureComputeInsights\ComputeInsight\CIRproject\VMCategorization\VMCategorization\bin\Debug\E06ABA44A8E0A752\AzureDeployment_C5B236EF589A478C\__ScopeCodeGenEngine__.dll] 
+Linker: Final Total time = 0.35584s < 74312572240 - 74313820355 > PB: 14405632 [E:\AzureComputeInsights\ComputeInsight\CIRproject\VMCategorization\VMCategorization\bin\Debug\E06ABA44A8E0A752\AzureDeployment_C5B236EF589A478C\__ScopeCodeGenEngine__.dll] 
+
+#LINK stderr:
+
+*** Done with C++ linking, time elapsed until this point: 00:00:32.4934791
+*** Exiting compilation, time elapsed until this point: 00:00:32.4939891

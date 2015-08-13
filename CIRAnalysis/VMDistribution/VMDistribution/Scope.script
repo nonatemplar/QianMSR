@@ -1,0 +1,55 @@
+﻿//Script GUID:61a3da4d-dc29-4118-8769-d8b57b298646
+//Used for tracking history
+a = 
+    SSTREAM
+    STREAMSET @"/shares/AzureAnalytics.Dev/AzureAnalytics.Dev.PublishedData/Microsoft.Azure.Compute/VmAvailabilityDataHourly"
+    PATTERN @"/%Y/%m/%d/%h/Data_%Y_%m_%d_%h.ss"
+    RANGE __date = ["2015-01-01","2015-02-01"],
+          __hour=["0","23"];
+/*
+rc =
+    SELECT *
+    FROM a
+    WHERE RCAEngineCategory == "0014c866-4a0a-413c-8f2d-fbcae65f3619";
+*/
+
+rc =
+    SELECT a.LogicalContainerId, COUNT(*) AS CountDownTime
+    FROM a
+    WHERE RCAEngineCategory=="Unplanned"
+    GROUP BY LogicalContainerId;
+
+rd =
+    SELECT a.*
+    FROM a
+    INNER JOIN rc
+    ON a.LogicalContainerId == rc.LogicalContainerId
+    ORDER BY LogicalContainerId, StartTime;
+
+
+
+OUTPUT rd TO @"/my/jobs/testing.txt" USING DefaultTextOutputter();
+
+/*
+
+
+
+
+VMcounting=
+    SELECT VM_DTcounting.TenantId, COUNT(*) AS VMcounts
+    FROM VM_DTcounting
+    GROUP BY TenantId;
+
+DTcounting = SELECT a.TenantId,  COUNT(*) AS CountDownTime
+    FROM a;
+
+results =
+    SELECT DTcounting.TenantId,
+           DTcounting.CountDownTime,
+           VMcounting.VMcounts
+    FROM DTcounting,
+         VMcounting
+    WHERE DTcounting.TenantId == VMcounting.TenantId;
+ */
+
+OUTPUT rc TO @"/my/jobs/test_VM_DT_Distribution_Feb.txt" USING DefaultTextOutputter();

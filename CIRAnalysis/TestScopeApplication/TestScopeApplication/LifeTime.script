@@ -1,0 +1,92 @@
+﻿//Script GUID:c88b3e86-dc99-4349-a93e-ba980f1f5ff7
+//Used for tracking history
+a = 
+    SSTREAM
+    SPARSE STREAMSET @"/shares/AzureAnalytics.Dev/AzureAnalytics.Dev.PublishedData/Microsoft.Azure.Compute/VmAvailabilityDataHourly"
+    PATTERN @"/%Y/%m/%d/%h/Data_%Y_%m_%d_%h.ss"
+    RANGE __date = ["2015-05-21","2015-05-22"],
+          __hour =["0","23"];
+
+b = 
+
+    SELECT LogicalContainerId, PreciseTimeStamp
+    FROM a;
+
+c =
+    REDUCE b
+    ON LogicalContainerId
+    PRODUCE LogicalContainerId,
+            InitTime,
+            LastTime
+    USING SampleReducer
+    PRESORT PreciseTimeStamp;
+
+OUTPUT c TO @"/my/jobs/reduce_test.txt" USING DefaultTextOutputter();
+
+#CS
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+public class SampleReducer : Reducer
+{
+
+     public override Schema Produces(string[] columns, string[] args, Schema input)
+
+     {
+
+          return new Schema("LogicalContainerId:string, InitTime: DateTime, LastTime: DateTime, Duration: long");  
+
+     }
+
+ 
+
+    public override IEnumerable<Row> Reduce(RowSet input, Row output, string[] args)
+    {
+        
+          bool first = true;
+
+          string LogicalContainerId = "";
+
+          DateTime initTime=new DateTime();
+
+
+          DateTime lastTime=new DateTime();
+
+          foreach (Row row in input.Rows)
+
+          {
+
+              if (first)
+
+              {
+                   LogicalContainerId=row[0].String;
+
+                   initTime=row[1].DateTime;
+                   lastTime=row[1].DateTime;
+                   
+                   first = false;
+
+              }
+              else {
+                  lastTime=row[1].DateTime;
+              }
+
+              
+          }
+
+          output[0].Set(LogicalContainerId);
+
+          output[1].Set(initTime);
+
+          output[2].Set(lastTime);
+
+          yield return output;
+
+     }
+
+}
+#ENDCS

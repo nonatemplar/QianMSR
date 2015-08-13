@@ -1,0 +1,15 @@
+﻿//Script GUID:61a3da4d-dc29-4118-8769-d8b57b298646
+//Used for tracking history
+
+a = SSTREAM
+    STREAMSET @"/shares/AzureAnalytics.Dev/AzureAnalytics.Dev.PublishedData/Microsoft.Azure.Compute/VmAvailabilityDataHourly"
+    PATTERN @"/%Y/%m/%d/%h/Data_%Y_%m_%d_%h.ss"
+    RANGE __date = ["2015-05-28","2015-05-28"],
+          __hour =["0","23"];
+
+b = SELECT a.LogicalContainerId, a.TenantId, a.RCAEngineCategory, COUNT(*) AS CountDownTime
+    FROM a
+    WHERE a.RCAEngineCategory == "CustomerInitiated";
+
+
+OUTPUT b TO @"/my/jobs/test_VMDistribution.txt" USING DefaultTextOutputter();

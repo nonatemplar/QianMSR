@@ -1,0 +1,19 @@
+﻿//Script GUID:799f3c41-59cf-465d-b8ea-ec0ee3908281
+//Used for tracking history
+MODULE @"/shares/AzureAnalytics.Prod/Sdk/AzureAnalytics1.3.module" AS AzureAnalytics;             
+             
+
+AzureAnalytics.Initialize(             
+	entity = "Microsoft.Azure.Compute.VmAvailabilityDataHourly");             
+             
+a = AzureAnalytics.LoadStream(             
+	entity = "Microsoft.Azure.Compute.VmAvailabilityDataHourly",             
+	startDateTime = "2015-06-01",
+	endDateTime = "2015-06-17");
+rc=
+
+    SELECT *
+    FROM a
+    WHERE RoleInstanceName == "S3-EPC-VMC-02";
+
+   OUTPUT rc TO @"/my/jobs/PizzaHut/DT_Accenture_S3-EPC-VMC-02.csv" USING DefaultTextOutputter();

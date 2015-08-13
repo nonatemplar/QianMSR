@@ -1,0 +1,80 @@
+﻿//Script GUID:d1c95d64-5bfc-412b-8ddd-4a27792da141
+//Used for tracking history
+
+rs = 
+SSTREAM
+SPARSE STREAMSET @"/shares/AzureAnalytics.Dev/AzureAnalytics.Dev.PublishedData/Microsoft.Cloud.MCIO/AzureDeployments/" 
+PATTERN @"/%Y/%m/%d/Data_%Y_%m_%d.ss"
+RANGE __date = ["2015-06-01","2015-06-09"];
+      
+               
+
+ stream = SELECT             
+	TOP 1000             
+	AuditCreateDate,
+	AuditUpdateDate,
+	DeploymentCreateTimestamp,
+	DeploymentCSSInfoLastUpdated,
+	DeploymentCurrentUpdateDomain,
+	DeploymentCurrentUpgradeDomain,
+	DeploymentCurrentUpgradeDomainState,
+	DeploymentDescription,
+	DeploymentDNSGuid,
+	DeploymentDNSName,
+	DeploymentFabricTenantStatus,
+	DeploymentGroup,
+	DeploymentGUID,
+	DeploymentHost,
+	DeploymentInputEndpoints,
+	DeploymentKind,
+	DeploymentLabel,
+	DeploymentLastChangingOperationId,
+	DeploymentLastChangingOperationStarted,
+	DeploymentLastServiceHealingTime,
+	DeploymentLastUpdated,
+	DeploymentLastVipSwapFailed,
+	DeploymentLastVipSwapFailedTime,
+	DeploymentName,
+	DeploymentNumUpgradeDomains,
+	DeploymentOsUpgradePolicy,
+	DeploymentOsVersion,
+	DeploymentProgressStatus,
+	DeploymentRoleInstanceDetails,
+	DeploymentRoleObjects,
+	DeploymentRoles,
+	DeploymentRolesCSSInfoLastUpdated,
+	DeploymentRolesLastUpdated,
+	DeploymentRolesSupportInfoLastUpdated,
+	DeploymentRoleToUpgrade,
+	DeploymentServiceHealingEnabled,
+	DeploymentServiceInstanceCount,
+	DeploymentSettings,
+	DeploymentStatus,
+	DeploymentSupportInfoLastUpdated,
+	DeploymentTransitionStatus,
+	DeploymentType,
+	DeploymentUpdateInProgress,
+	DeploymentUpdateType,
+	DeploymentVIP,
+	DeploymentVIPIPv6,
+	DeploymentWeightedNumberOfExtraSmallRoleInstances,
+	DeploymentWeightedNumberOfRoleInstances,
+	endpoint,
+	FabricGeoId,
+	FqdnSuffix,
+	HostedServiceName,
+	IS_Current,
+	IsSystemDeployment,
+	MigratedFrom,
+	PackageRequiredFeatures,
+	PersistentVMs,
+	RoleOsMap,
+	SCD_EndDate,
+	SCD_StartDate,
+	SdkVersion,
+	SourceTableName,
+	SubscriptionGUID,
+	TimeMigrated             
+ FROM rs;  
+
+OUTPUT stream TO @"/my/jobs/PizzaHut/pizzahut_deployments.txt" USING DefaultTextOutputter();

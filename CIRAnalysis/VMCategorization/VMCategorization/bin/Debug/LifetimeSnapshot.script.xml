@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?><CompileResult scriptPath="E:\AzureComputeInsights\ComputeInsight\CIRproject\VMCategorization\VMCategorization\bin\Debug\LifetimeSnapshot.script"><Error><Start>243</Start><End>327</End><Message>E_CSC_USER_EMPTYSTRUCTUREDSTREAMSET: Structured Streamset contains 0 streams
+Description:
+Scope requires at least one structured stream in order to obtain schema.
+Resolution:
+Verify that streamset parameters are correct and that it contains at least one structured stream.... at token [@"/shares/AzureAnalytics.Dev/AzureAnalytics.Dev.Local.DataSources/rdfesubscription/"], line 7
+near the ###:
+**************
+mework\v4.5\System.Core.dll";
+//Script GUID:05f85c64-1b0f-4420-9c4c-904c30844fc5
+//Used for tracking history
+             
+a = 
+SSTREAM 
+SPARSE STREAMSET  ### @"/shares/AzureAnalytics.Dev/AzureAnalytics.Dev.Local.DataSources/rdfesubscription/"             
+PATTERN @"/%Y/%m/Data_%Y_%m_%d.ss"
+RANGE __date = ["2015-06-
+**************
+</Message></Error></CompileResult>

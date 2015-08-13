@@ -1,0 +1,33 @@
+﻿//Script GUID:a5241b95-05c6-44a2-9652-787a235f879c
+//Used for tracking history
+MODULE @"/shares/AzureAnalytics.Prod/Sdk/AzureAnalytics1.3.module" AS AzureAnalytics;    
+
+
+ AzureAnalytics.Initialize(             
+	entity = "Microsoft.Cloud.Rdfedeployment");             
+             
+ rs = AzureAnalytics.LoadStream(             
+	entity = "Microsoft.Cloud.Rdfedeployment",             
+	startDateTime = "2015-05-14",
+	endDateTime = "2015-05-15");   
+
+
+
+/*
+deploymentList = 
+
+    EXTRACT 
+    DeploymentGUID:string
+    FROM @"/my/jobs/DeploymentLifetime/Deployment_list.txt"
+    USING DefaultTextExtractor();
+*/
+stream =
+    SELECT DeploymentId, DeploymentStatus,TimeCreated,TimeDeleted,DeploymentVMs,DeploymentType
+    FROM rs;
+/*
+         INNER JOIN deploymentList
+            ON rs.DeploymentGUID == deploymentList.DeploymentGUID;
+
+*/
+OUTPUT stream
+TO SSTREAM @"/my/jobs/DeploymentLifetime/rdfe_Deployments_0714.ss";

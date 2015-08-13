@@ -1,0 +1,4 @@
+DEFINE MODULE Schemas
+BEGIN
+    RESOURCE "/shares/AzureAnalytics.Dev/AzureAnalytics.Dev.Local.DataSources/Microsoft.Cloud.Public.Production.Rdfe/DeploymentContextActivityEtwTable/schemas/48C4C887660845A308B8E3E01F3DBFC1.schema";
+END MODULE

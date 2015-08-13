@@ -1,0 +1,18 @@
+VIEW VmAvailabilityDataHourlyView
+RETURN ROWSET
+(
+PreciseTimeStamp:DateTime,StartTime:DateTime,EndTime:DateTime,LogicalContainerId:string,RoleInstanceName:string,TenantName:string,RoleInstanceId:string,TenantId:string,NodeId:string,ContainerId:string,DataCenter:string,Cluster:string,RoleType:string,TransitionSignature:string,CADCategory:string,RCAEngineCategory:string,RCALevel1:string,RCALevel2:string,Duration:double,RCA:string,EventList:string
+)
+PARAMS
+(
+    entity string,
+    startDateTime string,
+    endDateTime string,
+    omitVirtualColumns bool DEFAULT = true
+)
+BEGIN
+VmAvailabilityDataHourly1 = SSTREAM SPARSE STREAMSET @"/shares/AzureAnalytics.Dev/AzureAnalytics.Dev.PublishedData/Microsoft.Azure.Compute/VmAvailabilityDataHourly/" PATTERN @"%Y/%m/%d/%h/Data_%Y_%m_%d_%h.ss" RANGE __date = ["2015-06-01", "2015-06-16"],__hour = ["0", "23"];
+VmAvailabilityDataHourly = SELECT PreciseTimeStamp, StartTime, EndTime, LogicalContainerId, RoleInstanceName, TenantName, RoleInstanceId, TenantId, NodeId, ContainerId, DataCenter, Cluster, RoleType, TransitionSignature, CADCategory, RCAEngineCategory, RCALevel1, RCALevel2, Duration, RCA, EventList FROM VmAvailabilityDataHourly1;
+
+
+END VIEW

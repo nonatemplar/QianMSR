@@ -1,0 +1,33 @@
+﻿//Script GUID:1406474a-1105-4b7f-83cb-1e37d958570e
+//Used for tracking history
+
+MODULE @"/shares/AzureAnalytics.Prod/Sdk/AzureAnalytics1.3.module" AS AzureAnalytics;             
+             
+AzureAnalytics.Initialize(             
+	entity = "Microsoft.Azure.Compute.VmAvailabilityDataHourly");             
+             
+a = AzureAnalytics.LoadStream(             
+	entity = "Microsoft.Azure.Compute.VmAvailabilityDataHourly",             
+	startDateTime = "2015-06-01",
+	endDateTime = "2015-06-17");
+
+
+rc =
+    SELECT *
+    FROM a
+    WHERE TenantId == "004cd841-4be7-4eda-88be-1507c76ba322";
+/*
+    SELECT RCA,
+           RoleType,
+           COUNT(*) AS Counts,
+           AVG(Duration) AS avg_Duration
+    FROM a
+    GROUP BY RCA,
+             RoleType;
+
+    SELECT DISTINCT RCA,
+                    COUNT(*) AS RCA_counts,
+                    AVG(Duration) AS avg_Duration
+    FROM a;
+*/
+OUTPUT rc TO @"/my/jobs/Raw_S3-EPC-VMC.txt" USING DefaultTextOutputter();
